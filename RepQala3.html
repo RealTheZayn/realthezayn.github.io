@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RepQala</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#8BB1CC; --bar:#F7F1E7; --bar2:#E1D8CC; --line:#A5937E;
+  --bg1:#A9CDDC; --bg2:#8BB1CC; --panel1:#DBE3E3; --panel2:#D1D9DD;
+  --card:#F7F1E7; --ink:#000000; --muted:#525252; --muted2:#6E6050; --hint:#9A9998; --blue:#3E83DB; --on-blue:#FFFFFF;
+  --green:#00A140; --amber:#CD8700; --red:#990000; --track:#E7DDCD;
+  --epage:#F7F1E7; --epanel1:#CDDBDF; --epanel2:#BDCDD7;
+  --map-bg:#F7F5F5; --road:#CED9E0; --bldg:#FCF8EF; --bldg-line:#F2E9E0; --map-ink:#3A4B5C;
+  --overlay:rgba(20,16,12,.38);
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-theme="dark"]{
+  --page:#0E1720; --bar:#28231F; --bar2:#1F1B18; --line:#6F655A;
+  --bg1:#1F3644; --bg2:#152532; --panel1:#25333D; --panel2:#1E2A33;
+  --card:#2E2A25; --ink:#F3EEE7; --muted:#B9AFA3; --blue:#4C93E6; --on-blue:#FFFFFF;
+  --green:#30C46C; --amber:#F0A63A; --red:#FF6B5E; --track:#3D372F;
+  --map-bg:#1C242E; --road:#3A4756; --bldg:#283039; --bldg-line:#38414C; --map-ink:#C9D3DD;
+  --muted2:#C9BBA9; --hint:#8E8780; --epage:#28231F; --epanel1:#25333D; --epanel2:#1E2A33;
+  --overlay:rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--page);color:var(--ink);
+  font-family:"Comic Neue","Comic Sans MS","Chalkboard SE",cursive;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bar)}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.app{max-width:440px;height:100%;margin:0 auto;display:flex;flex-direction:column;
+  background:linear-gradient(var(--bg1),var(--bg2));box-shadow:0 0 0 1.5px var(--line);overflow:hidden}
+.top{flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bar);border-bottom:1.5px solid var(--line)}
+.pill{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:999px;padding:9px 14px;background:transparent;
+  font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.iconbtn{background:none;border:0;padding:6px;border-radius:14px;cursor:pointer;position:relative;display:grid;place-items:center}
+.iconbtn svg{width:34px;height:34px}
+.badge{position:absolute;top:1px;right:0;min-width:19px;height:19px;padding:0 5px;box-sizing:border-box;border-radius:10px;
+  background:var(--red);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+main{flex:1;overflow-y:auto;padding:14px;position:relative}
+main.full{padding:0;overflow:hidden}
+main.epage{background:var(--epage)}
+.epanel{background:linear-gradient(var(--epanel1),var(--epanel2))}
+.nav{flex:none;display:flex;justify-content:space-around;align-items:center;padding:8px 0 10px;
+  background:linear-gradient(var(--bar2),var(--bar));border-top:2px solid var(--ink)}
+.nav .iconbtn svg{width:40px;height:40px}
+
+.panel{background:linear-gradient(var(--panel1),var(--panel2));border:1.5px solid var(--line);border-radius:24px;
+  padding:16px;min-height:100%;box-sizing:border-box}
+h1{font-size:30px;line-height:1.1;margin:2px 2px 12px}
+.sub{color:var(--muted2);font-size:17px;margin:-8px 2px 14px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:14px 16px}
+.stack>*+*{margin-top:12px}
+.muted{color:var(--muted)}
+.muted2{color:var(--muted2)}
+.small{font-size:15px}
+.back{background:none;border:0;font-size:17px;display:inline-flex;align-items:center;gap:2px;padding:2px 4px 2px 0;margin:-4px 0 8px;cursor:pointer}
+.back svg{width:20px;height:20px}
+
+.emerg{display:block;width:100%;text-align:left;background:var(--blue);color:var(--on-blue);border:0;border-radius:22px;
+  padding:16px 18px;cursor:pointer;margin-bottom:14px}
+.emerg b{display:block;font-size:27px;line-height:1.1;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.emerg span{display:block;font-size:16px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:14px 8px;min-height:118px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:19px;line-height:1.15;cursor:pointer;text-align:center}
+.tile svg{width:42px;height:42px}
+.tile.wide{grid-column:1/-1}
+
+.btn{display:block;width:100%;box-sizing:border-box;border-radius:24px;padding:14px;font-weight:700;font-size:21px;cursor:pointer;text-align:center}
+.btn.primary{background:var(--blue);color:var(--on-blue);border:2px solid rgba(255,255,255,.75);text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.btn.plain{background:var(--card);border:1.5px solid var(--line);font-size:19px}
+.field{width:100%;box-sizing:border-box;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:14px 18px;font-size:19px}
+.field::placeholder{color:var(--hint)}
+textarea.field{min-height:92px;resize:vertical}
+.label{display:block;font-size:18px;margin:16px 4px 8px}
+.err{color:var(--red);font-size:16px;margin:8px 6px 0}
+.err:empty{display:none}
+
+.login{min-height:100%;display:flex;flex-direction:column;justify-content:center;padding:10px 12px;box-sizing:border-box}
+.login .enter{width:62%;margin:18px auto 0}
+.login .egov{width:80%;margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:400;padding:10px 12px 10px 20px}
+.egov-ico{width:48px;height:48px;border-radius:12px;background:var(--blue);color:#fff;display:grid;place-items:center;flex:none}
+.egov-ico svg{width:28px;height:28px}
+.link{background:none;border:0;text-decoration:underline;font-size:17px;margin:22px auto 0;cursor:pointer;display:block}
+
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cat{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:8px 4px 10px;display:flex;flex-direction:column;
+  align-items:center;gap:4px;font-size:17px;cursor:pointer}
+.cat svg{width:30px;height:30px}
+.cat[aria-pressed="true"]{background:var(--blue);color:var(--on-blue);border-color:var(--blue)}
+.photo{display:grid;place-items:center;min-height:118px;background:var(--card);border:1.5px solid var(--line);border-radius:22px;cursor:pointer;overflow:hidden}
+.photo svg{width:44px;height:44px}
+.photo img{width:100%;max-height:220px;object-fit:cover;display:block}
+.loc{position:relative}
+.loc .field{padding-right:58px}
+.pinbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--red);cursor:pointer;padding:6px;border-radius:12px}
+.pinbtn svg{width:30px;height:30px}
+
+.chip{display:inline-block;background:var(--blue);color:var(--on-blue);border-radius:14px;padding:3px 12px;font-size:18px;font-weight:700}
+.rep{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer}
+.rep .t{flex:1;min-width:0}
+.rep .t b{display:block;font-size:20px;font-weight:400;line-height:1.15}
+.rep .t span{font-size:17px}
+.st svg{width:38px;height:38px}
+.s0,.s1{color:var(--amber)} .s2{color:var(--blue)} .s3{color:var(--green)}
+.details{margin-top:12px;padding-top:12px;border-top:1.5px dashed var(--line);font-size:16px}
+.details img{width:100%;border-radius:14px;margin-top:10px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:4px 0 10px;text-align:center;font-size:13px}
+.steps i{display:block;width:16px;height:16px;border-radius:50%;margin:0 auto 4px;border:2px solid var(--line);box-sizing:border-box}
+.steps .on i{background:var(--blue);border-color:var(--blue)}
+
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{text-align:center;padding:12px 4px}
+.stat b{display:block;font-size:29px;line-height:1.1}
+.stat span{color:var(--muted2);font-size:16px}
+.barrow{display:grid;grid-template-columns:88px 1fr 34px;align-items:center;gap:10px;font-size:18px;margin-top:8px}
+.bar{height:16px;border-radius:8px;background:var(--track);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:8px;background:var(--blue)}
+.barrow em{font-style:normal;text-align:right}
+
+.menuitem{display:block;width:100%;text-align:left;font-size:26px;padding:20px 22px;cursor:pointer}
+.menuitem+.menublock,.menublock+.menuitem,.menuitem+.menuitem{margin-top:14px}
+.menublock{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:14px 18px;margin-top:-6px;font-size:17px}
+.seg{display:flex;gap:8px;margin-top:8px}
+.seg button{flex:1;border:1.5px solid var(--line);background:transparent;border-radius:16px;padding:10px 6px;font-size:17px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--blue);color:var(--on-blue);border-color:var(--blue)}
+dl{margin:0} dt{font-weight:700;margin-top:10px} dd{margin:2px 0 0}
+
+.num{display:block;text-decoration:none;color:inherit;font-size:25px;padding:20px 22px}
+.note{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;cursor:pointer}
+.note .t{flex:1;min-width:0}
+.note b{display:block;font-size:20px;line-height:1.15;font-weight:400}
+.note.read b{font-weight:400}
+.note .meta{display:flex;justify-content:space-between;gap:8px;font-size:16px;color:var(--muted);margin-top:4px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--red);margin-top:8px;flex:none}
+.note.read .dot{visibility:hidden}
+
+.map{position:absolute;inset:0}
+.map svg{width:100%;height:100%;display:block}
+.map circle[data-act]{cursor:pointer}
+.mapback{position:absolute;top:12px;left:12px;z-index:2;background:var(--card);border:1.5px solid var(--line);border-radius:16px;
+  padding:6px 12px 6px 8px;font-size:17px;display:flex;align-items:center;gap:2px;cursor:pointer}
+.mapback svg{width:20px;height:20px}
+.maptitle{position:absolute;top:12px;right:12px;z-index:2;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:6px 12px;font-size:17px;font-weight:700}
+.legend{position:absolute;left:12px;right:12px;bottom:12px;z-index:2;background:var(--card);border:1.5px solid var(--line);border-radius:22px;
+  padding:12px 16px;display:flex;justify-content:space-around;gap:8px;font-size:24px}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{width:30px;height:30px;border-radius:50%;display:block;border:1px solid rgba(0,0,0,.25)}
+.legend i.line{width:26px;height:7px;border-radius:4px;border:0}
+
+.overlay{position:fixed;inset:0;background:var(--overlay);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.overlay.open{display:flex}
+.sheet{width:100%;max-width:440px;background:var(--bar);border-radius:24px 24px 0 0;border-top:2px solid var(--ink);
+  padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+.sheet h2{font-size:22px;margin:4px 6px 8px}
+.sheet button{display:flex;align-items:center;gap:14px;width:100%;background:none;border:0;border-radius:14px;padding:11px 8px;font-size:20px;cursor:pointer;text-align:left}
+.sheet button svg{width:26px;height:26px;flex:none}
+.sheet button:hover{background:var(--bar2)}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;
+  background:var(--ink);color:var(--bar);padding:10px 16px;border-radius:16px;font-size:17px;max-width:80%;text-align:center;
+  opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.done{text-align:center;padding-top:110px}
+.done .check{color:var(--green)} .done .check svg{width:120px;height:120px}
+.done p{font-size:21px;text-align:left;margin:18px 6px 26px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <button class="pill" id="pill" data-act="openAlerts">No notifications at the moment</button>
+    <button class="iconbtn" data-act="openAlerts" aria-label="Notifications"><span id="bellIcon"></span></button>
+  </header>
+  <main id="main"></main>
+  <nav class="nav" aria-label="Main">
+    <button class="iconbtn" data-act="openSheet" aria-label="Open menu" id="menuBtn"></button>
+    <button class="iconbtn" data-go="menu" aria-label="Account and settings" id="userBtn"></button>
+  </nav>
+</div>
+<div class="overlay" id="overlay" data-act="closeSheet">
+  <div class="sheet" role="dialog" aria-label="Menu" id="sheet"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- icons ---------- */
+const P = {
+  bell:'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',
+  menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  user:'<circle cx="12" cy="7" r="4"/><path d="M5.5 21v-1.5a5 5 0 0 1 5-5h3a5 5 0 0 1 5 5V21"/>',
+  report:'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M11 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v3"/><path d="M8.5 9h3M8.5 13h4M8.5 17h1.5"/><path d="M14 20.5 20.2 14.3a1.6 1.6 0 0 0-2.3-2.3L11.8 18.2V20.5z"/>',
+  list:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16.5l1.5 1.5 3-3"/>',
+  map:'<path d="M9 5 3 7.5v12L9 17l6 2.5 6-2.5v-12L15 7.5 9 5z"/><path d="M9 5v12M15 7.5v12"/>',
+  mappin:'<path d="M9 5 3 7.5v12L9 17l6 2.5 6-2.5V10"/><path d="M9 5v12M15 13v6.5"/><path d="M18 9.5s-3-2.6-3-4.7a3 3 0 0 1 6 0c0 2.1-3 4.7-3 4.7z"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M8 17v-4M12 17V8M16 17v-6"/>',
+  road:'<path d="M4 19 8.5 5M15.5 5 20 19M12 5v2.5M12 10.5v3M12 16.5V19"/>',
+  bulb:'<path d="M3 12h1.5M12 2.5V4M19.5 12H21M5.6 5.6l1 1M18.4 5.6l-1 1"/><path d="M9 16.5a5 5 0 1 1 6 0a3 3 0 0 0-1 2.5a2 2 0 0 1-4 0a3 3 0 0 0-1-2.5"/><path d="M9.8 17.5h4.4"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+  snow:'<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="M9.8 4.5 12 6.5l2.2-2M9.8 19.5 12 17.5l2.2 2"/>',
+  drop:'<path d="M12 3.5 7 10.5a6 6 0 1 0 10 0z"/>',
+  dots:'<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>',
+  photo:'<path d="M15 8h.01"/><path d="M12.5 21H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v6.5"/><path d="m3 16 5-5c.9-.9 2.1-.9 3 0l4 4"/><path d="M16 19h6M19 16v6"/>',
+  pin:'<path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/>',
+  clock:'<path d="M3.5 9.5A9 9 0 1 1 3 12"/><path d="M3 4.5v5h5"/><path d="M12 7.5V12l3 2.5"/>',
+  progress:'<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7.5V12h4"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19.5 7"/>',
+  back:'<path d="M15 5.5 8.5 12l6.5 6.5"/>',
+  home:'<path d="M4 11 12 4l8 7"/><path d="M6 9.5V20h12V9.5"/>',
+  phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  id:'<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M6 16a3.2 3.2 0 0 1 6 0M14.5 10h3.5M14.5 13.5h3.5"/>',
+  traffic:'<rect x="8" y="3" width="8" height="18" rx="3"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="16.5" r="1.2"/>'
+};
+function icon(n, w){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(w||2)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[n]+'</svg>'; }
+
+/* ---------- data ---------- */
+const CATS = {
+  road:{name:'Road', icon:'road', title:'Road problem', word:'road'},
+  light:{name:'Light', icon:'bulb', title:'Lighting problem', word:'lighting'},
+  garbage:{name:'Garbage', icon:'trash', title:'Garbage problem', word:'garbage'},
+  snow:{name:'Ice/Snow', icon:'snow', title:'Ice or snow on the road', word:'ice or snow'},
+  water:{name:'Water', icon:'drop', title:'Water problem', word:'water'},
+  other:{name:'Other', icon:'dots', title:'Other problem', word:'similar'}
+};
+const STAGE_LABEL = ['Sent','Under review','In progress','Fixed'];
+const STAGE_ICON = ['clock','clock','progress','check'];
+const STAGE_DELAY = [0, 20000, 60000, 120000];      // demo: statuses move on by themselves
+const NEARBY = {
+  road:[['Hole in the road',80,2],['Broken asphalt',150,4],['Road hole',260,6]],
+  light:[['Streetlight is off',120,1],['Dark pedestrian crossing',290,5]],
+  garbage:[['Overflowing bins',60,3]],
+  snow:[], water:[['Pipe leak on the sidewalk',210,2]], other:[]
+};
+const BASE = {road:82, garbage:54, light:41, snow:33, water:22, other:16};
+const BASE_FIXED = 156;
+const KEY = 'repqala-v1';
+const DAY = 864e5;
+
+function seed(){
+  const now = Date.now();
+  return { v:1, user:null, theme:'light', nextId:1022, votes:{},
+    reports:[
+      {id:1021, cat:'light', title:'Not working traffic light', address:'Kabanbay Batyr Ave, 60', desc:'', photo:null, stage:1, created:now-3*DAY, auto:false},
+      {id:1008, cat:'road', title:'Road hole', address:'Kerey and Zhanibek Khans St, 12', desc:'', photo:null, stage:3, created:now-12*DAY, auto:false}
+    ],
+    notes:[
+      {id:2, text:'Road hole has been fixed!', time:now-2*DAY, read:false},
+      {id:1, text:'Your password was changed', time:now-40*DAY, read:true}
+    ]
+  };
+}
+function load(){
+  try { localStorage.removeItem(KEY); } catch(e){}
+  return seed();
+}
+let S = load();
+if (S.theme === 'system') S.theme = 'light';
+function save(){ return;
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e){
+    try { S.reports.forEach(r => { r.photo = null; }); localStorage.setItem(KEY, JSON.stringify(S)); } catch(e2){}
+  }
+}
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const main = $('main');
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(t){ const d = new Date(t), p = n => String(n).padStart(2,'0'); return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear(); }
+let toastTimer;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600); }
+function applyTheme(){ const r = document.documentElement; if (S.theme === 'dark') r.setAttribute('data-theme', 'dark'); else r.removeAttribute('data-theme'); }
+function back(){ return ''; }
+function addNote(text){ S.notes.unshift({id:Date.now()+Math.random(), text:text, time:Date.now(), read:false}); }
+
+/* ---------- state for the current visit ---------- */
+let current = 'home';
+let draft = {cat:null, photo:null, address:'', desc:''};
+let lastDone = null;
+let openRep = null;
+let openMenu = null;
+
+/* ---------- views ---------- */
+const V = {};
+
+V.login = () => '<div class="login">'+
+  '<form id="loginForm" novalidate>'+
+  '<label class="sr" for="ph">Phone number</label>'+
+  '<input id="ph" class="field" type="tel" inputmode="tel" autocomplete="tel" placeholder="Phone number">'+
+  '<label class="sr" for="pw">Password</label>'+
+  '<input id="pw" class="field" type="password" autocomplete="current-password" placeholder="Password" style="margin-top:22px">'+
+  '<p class="err" id="loginErr" role="alert"></p>'+
+  '<button class="btn plain enter" type="submit" style="font-size:26px">Enter</button>'+
+  '<button class="btn plain egov" type="button" data-act="egov"><span>Join via egov</span><span class="egov-ico">'+icon('id')+'</span></button>'+
+  '</form>'+
+  '</div>';
+
+V.home = () => '<button class="emerg" data-go="emergency"><b>Do you need emergency assistance?</b>'+
+  '<span>A quick and convenient way to contact services in the Republic of Kazakhstan for assistance.</span></button>'+
+  '<div class="panel"><div class="tiles">'+
+  '<button class="tile" data-go="report">Make a report'+icon('report')+'</button>'+
+  '<button class="tile" data-go="my-reports">View existing reports'+icon('list')+'</button>'+
+  '<button class="tile" data-go="safety">Criminality/ Emergency'+icon('mappin')+'</button>'+
+  '<button class="tile" data-go="parking">Parking'+icon('mappin')+'</button>'+
+  '<button class="tile wide" data-go="stats">City statistics'+icon('chart')+'</button>'+
+  '</div></div>';
+
+V.report = () => {
+  const cats = Object.keys(CATS).map(k =>
+    '<button class="cat" data-act="cat" data-cat="'+k+'" aria-pressed="'+(draft.cat===k)+'">'+CATS[k].name+icon(CATS[k].icon)+'</button>').join('');
+  const ph = draft.photo ? '<img src="'+draft.photo+'" alt="Your photo of the problem">' : icon('photo');
+  return '<div class="panel">'+back('home')+
+    '<span class="label" style="margin-top:0">What is the issue?(choose)</span><div class="cats">'+cats+'</div>'+
+    '<label class="label" for="photoIn">Upload a photo</label>'+
+    '<label class="photo" id="photoBox" for="photoIn">'+ph+'</label>'+
+    '<input id="photoIn" type="file" accept="image/*" class="sr">'+
+    '<label class="label" for="addr">Location</label>'+
+    '<div class="loc"><input id="addr" class="field" placeholder="Street and house number" value="'+esc(draft.address)+'">'+
+    '<button class="pinbtn" data-act="locate" aria-label="Use my current location">'+icon('pin')+'</button></div>'+
+    '<label class="label" for="desc">Description(optional)</label>'+
+    '<textarea id="desc" class="field" placeholder="A hole in the road...">'+esc(draft.desc)+'</textarea>'+
+    '<p class="err" id="repErr" role="alert"></p>'+
+    '<button class="btn primary" data-act="submitReport" style="margin-top:18px;font-size:26px">Submit a Report!</button>'+
+    '</div>';
+};
+
+V.similar = () => {
+  const list = NEARBY[draft.cat] || [];
+  const n = list.length + (S.votes[draft.cat] || 0);
+  const high = n >= 3;
+  return '<div class="panel">'+back('report')+
+    '<h1>Similar reports found</h1>'+
+    '<div class="card">'+(high ? '<span class="chip">high priority</span>' : '<span class="chip">already reported</span>')+
+    '<p style="font-size:20px;margin:10px 0 6px">'+n+' '+(n===1?'person':'people')+' already reported a '+CATS[draft.cat].word+' problem within 300 m of you in the last 7 days.</p>'+
+    (high ? '<p class="muted2 small" style="margin:0">This spot was sent to city services as a priority case.</p>' : '')+
+    '</div><p class="muted2" style="font-size:18px;margin:16px 4px 8px">Reports near you</p><div class="stack">'+
+    list.map(r => '<div class="card"><b style="font-weight:400;font-size:20px">'+r[0]+'</b><div class="muted2 small">'+r[1]+' m away · '+r[2]+' days ago</div></div>').join('')+
+    '</div><div class="stack" style="margin-top:16px">'+
+    '<button class="btn primary" data-act="vote" style="font-size:24px">Add my vote (+1)</button>'+
+    '<button class="btn plain" data-act="different">No, it’s a different problem</button></div>'+
+    '<p class="muted2 small" style="text-align:center;margin:12px 6px 0">More votes mean more attention: problems reported by more people get the highest priority.</p>'+
+    '</div>';
+};
+
+V.done = () => {
+  let msg = 'Report successfully submitted! We will notify you once it is reviewed.';
+  if (lastDone && lastDone.type === 'vote') msg = 'Your vote was added! We will notify you once it is reviewed.';
+  return '<div class="panel done"><div class="check">'+icon('check',2.6)+'</div><p>'+msg+'</p></div>';
+};
+
+V['my-reports'] = () => {
+  const reps = S.reports.slice().sort((a,b) => b.created - a.created);
+  const body = reps.length ? reps.map(r => {
+    const open = false;
+    let det = '';
+    if (open) {
+      det = '<div class="details"><div class="steps">'+STAGE_LABEL.map((l,i) => '<div class="'+(i<=r.stage?'on':'')+'"><i></i>'+l+'</div>').join('')+'</div>'+
+        '<div>Report #'+r.id+', sent '+fmtDate(r.created)+'</div><div>'+esc(r.address)+'</div>'+
+        (r.desc ? '<div class="muted">“'+esc(r.desc)+'”</div>' : '')+
+        (r.photo ? '<img src="'+r.photo+'" alt="Photo attached to this report">' : '')+'</div>';
+    }
+    return '<div class="card"><button class="rep" style="background:none;border:0;padding:0" data-act="toggleRep" data-id="'+r.id+'" aria-expanded="'+open+'">'+
+      '<span class="t"><b>'+esc(r.title)+'</b><span class="muted">'+STAGE_LABEL[r.stage]+'</span></span>'+
+      '<span class="st s'+r.stage+'">'+icon(STAGE_ICON[r.stage], 2.4)+'</span></button>'+det+'</div>';
+  }).join('') : '<div class="card"><p style="margin:0 0 12px;font-size:19px">You haven’t reported anything yet.</p><button class="btn primary" data-go="report">Make a report</button></div>';
+  return '<div class="panel"><div class="stack">'+body+'</div></div>';
+};
+
+V.stats = () => {
+  const counts = Object.assign({}, BASE);
+  let fixed = BASE_FIXED;
+  S.reports.forEach(r => { counts[r.cat] = (counts[r.cat]||0) + 1; if (r.stage === 3) fixed++; });
+  const total = Object.values(counts).reduce((a,b) => a+b, 0);
+  const max = Math.max.apply(null, Object.values(counts));
+  const month = new Date().toLocaleString('en-US', {month:'long', year:'numeric'});
+  const rows = Object.keys(CATS).sort((a,b) => counts[b]-counts[a]).map(k =>
+    '<div class="barrow"><span>'+CATS[k].name+'</span><span class="bar"><i style="width:'+Math.round(counts[k]/max*100)+'%"></i></span><em>'+counts[k]+'</em></div>').join('');
+  return '<div class="panel">'+back('home')+'<h1>City statistics</h1><p class="sub">'+month+'</p>'+
+    '<div class="stats3"><div class="card stat"><b>'+total+'</b><span>reports</span></div>'+
+    '<div class="card stat"><b>'+Math.round(fixed/total*100)+'%</b><span>resolved</span></div>'+
+    '<div class="card stat"><b>4.3</b><span>days to fix</span></div></div>'+
+    '<div class="card" style="margin-top:12px"><div style="font-size:21px">Reports by category</div>'+rows+'</div>'+
+    '<div class="card" style="margin-top:12px"><div class="muted2 small">Most reports</div><div style="font-size:21px;margin-top:2px">Esil district: 61 reports</div></div>'+
+    '<div class="card" style="margin-top:12px"><span class="chip">smart AI alert</span>'+
+    '<p style="font-size:20px;margin:10px 0 4px">Road reports are up 60% this week.</p>'+
+    '<p class="muted2 small" style="margin:0">Repair crews were requested for Esil and Saryarka districts, where most new road reports come from.</p></div>'+
+    '<button class="btn primary" data-go="hotspots" style="margin-top:14px;font-size:24px">See hotspot map</button></div>';
+};
+
+V.menu = () => {
+  const block = (key, title, inner) =>
+    '<button class="card menuitem" data-act="toggleMenu" data-key="'+key+'" aria-expanded="'+(openMenu===key)+'">'+title+'</button>'+
+    (openMenu === key ? '<div class="menublock">'+inner+'</div>' : '');
+  const acc = S.user ? '<div>Signed in with: '+esc(S.user.via === 'egov' ? 'eGov' : S.user.phone)+'</div>'+
+    '<div class="muted">Reports sent: '+S.reports.length+'</div><button class="btn plain" data-act="logout" style="margin-top:12px">Log out</button>' : '';
+  const ap = '<div>Theme</div><div class="seg">'+['light','dark'].map(t =>
+    '<button data-act="theme" data-val="'+t+'" aria-pressed="'+((t==='dark') === (S.theme==='dark'))+'">'+t[0].toUpperCase()+t.slice(1)+'</button>').join('')+'</div>';
+  const faq = '<dl><dt>Who receives my report?</dt><dd>The city service responsible for that category, for example road repair for potholes.</dd>'+
+    '<dt>How long does a fix take?</dt><dd>On average 4 days. You get a notification every time the status changes.</dd>'+
+    '<dt>Why log in?</dt><dd>Linking reports to a real account stops fake reports and lets you track yours.</dd></dl>';
+  const contact = '<label class="sr" for="msg">Your message</label><textarea id="msg" class="field" placeholder="Write your question or idea"></textarea>'+
+    '<button class="btn primary" data-act="sendMsg" style="margin-top:10px">Send message</button>';
+  return block('acc','Account',acc)+block('ap','Appearance',ap)+block('faq','FAQ',faq)+block('contact','Contact us!',contact);
+};
+
+V.emergency = () => {
+  const nums = [['101','Fire Rescue'],['102','Police'],['103','Ambulance'],['104','Gas emergency'],['112','Any Emergency']];
+  return '<div class="panel epanel"><div class="stack">'+
+    nums.map(n => '<a class="card num" href="tel:'+n[0]+'">'+n[0]+' - '+n[1]+'</a>').join('')+'</div></div>';
+};
+
+V.alerts = () => {
+  const list = S.notes.length ? S.notes.map(n =>
+    '<button class="card note" data-act="readNote" data-id="'+n.id+'"><span class="t"><b>'+esc(n.text)+'</b>'+
+    '<span class="meta"><span>Tap to learn more</span><span>'+fmtDate(n.time)+'</span></span></span></button>').join('')
+    : '<div class="card">No notifications yet.</div>';
+  const unread = S.notes.some(n => !n.read);
+  return '<div class="panel"><div class="stack">'+list+'</div></div>';
+};
+
+/* ---------- maps ---------- */
+const ROADS = [
+  {p:[[-30,110],[430,235]], w:26, n:'пр. Кабанбай батыра', t:.5},
+  {p:[[255,-30],[170,790]], w:20, n:'ул. Кошке Кеменгерулы', t:.62},
+  {p:[[-30,430],[430,525]], w:20, n:'ул. Сыганак', t:.25},
+  {p:[[72,-30],[30,790]], w:12}, {p:[[368,-30],[336,790]], w:12},
+  {p:[[-30,665],[430,700]], w:14, n:'ул. Керей, Жанибек хандар', t:.62},
+  {p:[[48,300],[318,335]], w:9}, {p:[[205,520],[232,790]], w:9}
+];
+const BLDG = [[95,20,120,55,15],[275,40,70,90,15],[90,265,60,25,7],[110,330,90,45,8],[250,280,70,55,8],[90,470,80,95,10],
+  [250,560,60,80,10],[290,365,30,50,10],[30,560,25,70,5],[95,595,80,40,9],[260,720,60,40,4],[95,730,90,30,4],[355,300,35,90,4]];
+const TRAFFIC = {0:[[0,.35,'g'],[.35,.6,'r'],[.6,1,'y']],1:[[0,.45,'g'],[.45,.7,'y'],[.7,1,'g']],2:[[0,.5,'g'],[.5,.8,'r'],[.8,1,'g']],
+  3:[[0,1,'g']],4:[[0,.5,'y'],[.5,1,'g']],5:[[0,.4,'g'],[.4,1,'y']],6:[[0,1,'g']],7:[[0,1,'r']]};
+const TCOL = {g:'#00A140', y:'#E9FD14', r:'#F50000'};
+const SPOTS = [[118,152,1],[168,166,1],[220,180,0],[300,201,1],[345,213,1],[247,92,0],[239,138,1],[60,250,1],[54,330,1],
+  [205,380,1],[196,450,0],[140,470,1],[260,494,1],[330,512,1],[360,598,0],[220,600,1],[188,650,1],[110,668,1],[58,520,1]];
+const HOT = [[305,214,44,'24'],[110,460,34,'14'],[200,640,40,'19'],[330,520,28,'9']];
+
+function lerp(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]; }
+function mapSVG(mode){
+  let s = '<svg viewBox="0 0 400 760" preserveAspectRatio="xMidYMid slice" role="img" aria-label="City map"><rect width="400" height="760" style="fill:var(--map-bg)"/>';
+  BLDG.forEach(b => { s += '<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="'+b[3]+'" rx="3" transform="rotate('+b[4]+' '+(b[0]+b[2]/2)+' '+(b[1]+b[3]/2)+')" style="fill:var(--bldg);stroke:var(--bldg-line);stroke-width:1.5"/>'; });
+  ROADS.forEach(r => { s += '<line x1="'+r.p[0][0]+'" y1="'+r.p[0][1]+'" x2="'+r.p[1][0]+'" y2="'+r.p[1][1]+'" style="stroke:var(--road);stroke-width:'+r.w+';stroke-linecap:round"/>'; });
+  if (mode === 'traffic') {
+    ROADS.forEach((r,i) => (TRAFFIC[i]||[]).forEach(seg => {
+      const a = lerp(r.p[0], r.p[1], seg[0]), b = lerp(r.p[0], r.p[1], seg[1]);
+      s += '<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" style="stroke:'+TCOL[seg[2]]+';stroke-width:6;stroke-linecap:round"/>';
+    }));
+  }
+  ROADS.forEach(r => {
+    if (!r.n) return;
+    const c = lerp(r.p[0], r.p[1], r.t);
+    let a = Math.atan2(r.p[1][1]-r.p[0][1], r.p[1][0]-r.p[0][0]) * 180 / Math.PI;
+    if (a > 90) a -= 180; if (a < -90) a += 180;
+    s += '<text x="'+c[0]+'" y="'+c[1]+'" transform="rotate('+a.toFixed(1)+' '+c[0]+' '+c[1]+')" text-anchor="middle" dominant-baseline="middle" style="fill:var(--map-ink);font:600 12px system-ui,sans-serif;paint-order:stroke;stroke:var(--map-bg);stroke-width:3px">'+r.n+'</text>';
+  });
+  if (mode === 'parking') {
+    SPOTS.forEach((p,i) => { s += '<circle data-act="spot" data-n="'+(i+1)+'" data-free="'+p[2]+'" cx="'+p[0]+'" cy="'+p[1]+'" r="10" style="fill:'+(p[2]?'#00A140':'#E9FD14')+';stroke:rgba(0,0,0,.35);stroke-width:1"/>'; });
+  }
+  if (mode === 'hotspots') {
+    HOT.forEach(h => { s += '<circle cx="'+h[0]+'" cy="'+h[1]+'" r="'+h[2]+'" style="fill:#E3261B;fill-opacity:.22;stroke:#E3261B;stroke-width:2"/>'+
+      '<text x="'+h[0]+'" y="'+h[1]+'" text-anchor="middle" dominant-baseline="middle" style="fill:#B3170F;font:700 17px system-ui,sans-serif">'+h[3]+'</text>'; });
+  }
+  return s + '</svg>';
+}
+function mapView(mode, legend){
+  return '<div class="map">'+mapSVG(mode)+'</div>'+(legend ? '<div class="legend">'+legend+'</div>' : '');
+}
+V.parking = () => mapView('parking', '<span><i style="background:#00A140"></i>• Free</span><span><i style="background:#E9FD14"></i>• Occupied</span>');
+V.safety = () => mapView('traffic');
+V.hotspots = () => mapView('hotspots');
+const MAPS = ['parking','safety','hotspots'];
+
+/* ---------- render & routing ---------- */
+function updateTop(){
+  const pill = $('pill');
+  const unread = S.notes.filter(n => !n.read);
+  if (!S.user) pill.textContent = 'Not logged in yet';
+  else pill.textContent = unread.length ? unread[0].text : 'No notifications at the moment';
+}
+function render(){
+  main.className = MAPS.indexOf(current) > -1 ? 'full' : (current === 'emergency' ? 'epage' : '');
+  main.innerHTML = V[current]();
+  updateTop();
+}
+function route(){
+  let v = (location.hash || '').slice(1);
+  if (!V[v]) v = S.user ? 'home' : 'login';
+  if (!S.user && v !== 'login' && v !== 'emergency') v = 'login';
+  if (S.user && v === 'login') v = 'home';
+  if ((v === 'similar') && !draft.cat) v = 'report';
+  current = v;
+  render();
+  main.scrollTop = 0;
+}
+function go(v){ if (location.hash.slice(1) === v) route(); else location.hash = v; }
+
+/* ---------- actions ---------- */
+function createReport(){
+  const id = S.nextId++;
+  const title = draft.desc.trim() ? draft.desc.trim().slice(0, 40) + (draft.desc.trim().length > 40 ? '…' : '') : CATS[draft.cat].title;
+  S.reports.push({id:id, cat:draft.cat, title:title, address:draft.address.trim(), desc:draft.desc.trim(), photo:draft.photo, stage:0, created:Date.now(), auto:true});
+  lastDone = {type:'report', id:id};
+  draft = {cat:null, photo:null, address:'', desc:''};
+  save();
+}
+function readPhoto(file){
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 480 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = rej; img.src = fr.result;
+    };
+    fr.onerror = rej; fr.readAsDataURL(file);
+  });
+}
+function openSheet(){
+  const items = [['home','home','Home'],['report','report','Make a report'],['my-reports','list','My reports'],['parking','mappin','Parking map'],
+    ['safety','mappin','Safety map'],['stats','chart','City statistics'],['emergency','phone','Emergency numbers'],['alerts','bell','Notifications']];
+  $('sheet').innerHTML = '<h2>RepQala</h2>' + items.map(i => '<button data-go="'+i[0]+'">'+icon(i[1])+i[2]+'</button>').join('');
+  $('overlay').classList.add('open');
+}
+function closeSheet(){ $('overlay').classList.remove('open'); }
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-go],[data-act]');
+  if (!el) return;
+  if (el.id === 'overlay' && e.target !== el) return;
+  if (el.dataset.go) {
+    e.preventDefault(); closeSheet();
+    if (!S.user && el.dataset.go !== 'emergency' && el.dataset.go !== 'login') { toast('Log in first to use this.'); return; }
+    go(el.dataset.go); return;
+  }
+  const a = el.dataset.act;
+  if (a === 'openAlerts') { if (S.user) go('alerts'); else toast('Log in to see notifications.'); }
+  else if (a === 'openSheet') { if (S.user) openSheet(); else toast('Log in to open the menu.'); }
+  else if (a === 'closeSheet') closeSheet();
+  else if (a === 'egov') {
+    toast('Connecting to eGov…');
+    setTimeout(() => { S.user = {via:'egov', phone:''}; save(); go('home'); toast('Signed in with eGov'); }, 1100);
+  }
+  else if (a === 'cat') {
+    draft.cat = el.dataset.cat;
+    document.querySelectorAll('.cat').forEach(b => b.setAttribute('aria-pressed', String(b === el)));
+  }
+  else if (a === 'locate') {
+    e.preventDefault();
+    if (!navigator.geolocation) { toast('Location is not available. Type the address instead.'); return; }
+    toast('Finding your location…');
+    navigator.geolocation.getCurrentPosition(pos => {
+      draft.address = 'Near ' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4);
+      const f = $('addr'); if (f) f.value = draft.address;
+      toast('Location added');
+    }, () => toast('Location is off. Type the address instead.'), {timeout:8000});
+  }
+  else if (a === 'submitReport') {
+    const err = [];
+    if (!draft.cat) err.push('Choose what the issue is.');
+    if (!draft.address.trim()) err.push('Add the location, or tap the pin to use yours.');
+    $('repErr').textContent = err.join(' ');
+    if (err.length) return;
+    if ((NEARBY[draft.cat] || []).length) go('similar');
+    else { createReport(); go('done'); }
+  }
+  else if (a === 'vote') {
+    const cat = draft.cat;
+    S.votes[cat] = (S.votes[cat] || 0) + 1;
+    lastDone = {type:'vote', count:(NEARBY[cat].length + S.votes[cat])};
+    draft = {cat:null, photo:null, address:'', desc:''};
+    save(); go('done');
+  }
+  else if (a === 'different') { createReport(); go('done'); }
+  else if (a === 'toggleRep') { const id = +el.dataset.id; openRep = openRep === id ? null : id; render(); }
+  else if (a === 'toggleMenu') { const k = el.dataset.key; openMenu = openMenu === k ? null : k; render(); }
+  else if (a === 'theme') { S.theme = el.dataset.val; save(); applyTheme(); render(); }
+  else if (a === 'logout') { S.user = null; openMenu = null; save(); go('login'); toast('Logged out'); }
+  else if (a === 'sendMsg') {
+    const m = $('msg');
+    if (!m.value.trim()) { toast('Write a message first.'); return; }
+    m.value = ''; toast('Message sent. We usually reply within 2 days.');
+  }
+  else if (a === 'readNote') { const n = S.notes.find(x => String(x.id) === el.dataset.id); if (n) { n.read = true; save(); render(); } }
+  else if (a === 'readAll') { S.notes.forEach(n => n.read = true); save(); render(); }
+  else if (a === 'spot') { toast('Space P-' + el.dataset.n + ': ' + (el.dataset.free === '1' ? 'free' : 'occupied')); }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'addr') draft.address = e.target.value;
+  if (e.target.id === 'desc') draft.desc = e.target.value;
+});
+document.addEventListener('change', e => {
+  if (e.target.id !== 'photoIn' || !e.target.files[0]) return;
+  readPhoto(e.target.files[0]).then(url => {
+    draft.photo = url;
+    const box = $('photoBox'); if (box) box.innerHTML = '<img src="'+url+'" alt="Your photo of the problem">';
+  }).catch(() => toast('This photo could not be loaded. Try another one.'));
+});
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'loginForm') return;
+  e.preventDefault();
+  const phone = $('ph').value.trim(), pw = $('pw').value;
+  const digits = phone.replace(/\D/g, '');
+  let msg = '';
+  if (digits.length < 10 || digits.length > 12) msg = 'Enter your phone number, for example +7 701 234 5678.';
+  else if (pw.length < 8) msg = 'The password must be at least 8 characters.';
+  $('loginErr').textContent = msg;
+  if (msg) return;
+  S.user = {via:'phone', phone:phone};
+  save(); go('home');
+});
+
+/* ---------- demo: statuses move forward over time ---------- */
+const NOTE_TEXT = [null, t => 'Your report “'+t+'” is under review', t => 'A repair crew is working on “'+t+'”', t => '“'+t+'” has been fixed!'];
+function tick(){
+  let changed = false;
+  S.reports.forEach(r => {
+    if (!r.auto || r.stage >= 3) return;
+    const el = Date.now() - r.created;
+    let st = 0; STAGE_DELAY.forEach((d,i) => { if (el >= d) st = i; });
+    if (st > r.stage) { r.stage = st; addNote(NOTE_TEXT[st](r.title)); changed = true; }
+  });
+  if (changed) {
+    save(); updateTop();
+    if (current === 'my-reports' || current === 'alerts') render();
+  }
+}
+
+/* ---------- start ---------- */
+$('bellIcon').innerHTML = icon('bell');
+$('menuBtn').innerHTML = icon('menu', 2.6);
+$('userBtn').innerHTML = icon('user', 2.4);
+applyTheme();
+window.addEventListener('hashchange', route);
+route();
+tick();
+setInterval(tick, 4000);
+})();
+</script>
+</body>
+</html>
